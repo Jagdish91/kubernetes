@@ -49,3 +49,42 @@ spec:
   - image: nginx
     name: manual
 ```
+
+📋 Part 2: Static Pods
+What are Static Pods?
+Static pods are managed directly by the kubelet on each node, not by the Kubernetes API server. They're defined by manifest files in a specific directory on each node.
+
+Hands-on Implementation
+1. Access Node Containers (Kind Environment)
+
+```bash
+# List running containers
+docker ps
+
+# Access control plane
+docker exec -it my-first-cluster-control-plane bash
+
+# Access worker nodes
+docker exec -it my-first-cluster-worker bash
+docker exec -it my-first-cluster-worker2 bash
+```
+2. Static Pod Manifest Location
+bash
+
+
+# Standard static pod directory
+/etc/kubernetes/manifests/
+
+3. Creating Static Pods
+```bash
+# Generate static pod YAML
+kubectl run static-pod --image=nginx -o yaml --dry-run=client > static-pod.yaml
+
+# Copy to static pod directory on each node
+cp static-pod.yaml /etc/kubernetes/manifests/
+```
+🔍 Static Pod Behavior
+Kubelet Management: Kubelet directly manages these pods
+Mirror Objects: API server creates read-only mirror objects
+No kubectl Control: Cannot edit/delete via kubectl
+File-based: Changes require modifying manifest files on nodes
