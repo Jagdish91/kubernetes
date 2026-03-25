@@ -88,3 +88,19 @@ Kubelet Management: Kubelet directly manages these pods
 Mirror Objects: API server creates read-only mirror objects
 No kubectl Control: Cannot edit/delete via kubectl
 File-based: Changes require modifying manifest files on nodes
+
+
+
+Mirror Pods in Kubernetes
+When a static pod is created, the kubelet automatically generates a corresponding "mirror pod" on the Kubernetes API server. These mirror pods allow static pods to be visible when running kubectl get pods, but they cannot be controlled or managed through the API server.
+
+How Mirror Pods Work
+The Kubelet detects static pod manifests from /etc/kubernetes/manifests/.
+It creates and manages the static pod independently from the Kubernetes control plane.
+To ensure visibility in kubectl get pods, Kubelet creates a "mirror pod" on the API server.
+However, this mirror pod is read-only—it cannot be modified, deleted, or controlled using kubectl.
+Pod Naming Convention for Mirror Pods
+The name of the mirror pod follows this pattern:
+<static-pod-name>-<node-hostname>
+Example:
+nginx-static-pod-my-second-cluster-worker2
