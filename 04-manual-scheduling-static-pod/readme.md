@@ -35,3 +35,16 @@ kubectl get nodes
 
 # Check pod placement
 kubectl get pods -o wide
+
+```
+Key Configuration
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: manual
+spec:
+  nodeName: <target-node-name>  # This field enables manual scheduling
+  containers:
+  - image: nginx
+    name: manual
