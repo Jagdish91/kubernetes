@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node1-deploy
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-deploy
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: my-deploy
+    spec:
+      tolerations:
+        - key: "storage"
+          operator: "Exists"
+          effect: "NoSchedule"
+        - key: "env"
+          operator: "Equal"
+          value: "prod"
+          effect: NoSchedule
+      containers:
+      - image: nginx
+        name: nginx
