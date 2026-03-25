@@ -38,7 +38,7 @@ kubectl get pods -o wide
 
 ```
 Key Configuration
-
+```yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -48,3 +48,4 @@ spec:
   containers:
   - image: nginx
     name: manual
+```
