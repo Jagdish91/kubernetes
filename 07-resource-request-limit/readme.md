@@ -2,7 +2,7 @@
 A comprehensive learning guide for DevOps and Cloud Engineers
 __________________________________________________
 📚 Table of Contents
-•	✓ Introduction & Problem Statement
+•	✓ Introduction & Problem Statementd
 •	✓ Requests vs Limits
 •	✓ Resource Types & Units
 •	✓ How Scheduling Works
