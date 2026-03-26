@@ -17,18 +17,7 @@ A comprehensive learning guide for DevOps and Cloud Engineers
 
 \_**\_**\_**\_**\_**\_**\_**\_**\_**\_**\_**\_**\_**\_**\_**\_**\_\_
 
-## 🎯 Why Do We Need Requests and Limits?
-
-### The Noisy Neighbor Problem
-
-Imagine a Kubernetes cluster with two deployments running on the same nodes:
-
-- Deployment-1: Normal application running smoothly
-- Deployment-2: Malfunctioning pods consuming all available CPU and memory
-
-Without requests and limits, Deployment-2 starves Deployment-1 of resources, causing performance degradation or complete failure. This is the noisy neighbor problem.
-
-### ✅ Solution: Requests & Limits
+ Requests & Limits
 
 - Requests: Define minimum resources a container needs
 - Limits: Define maximum resources a container can consume
