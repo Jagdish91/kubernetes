@@ -1,11 +1,7 @@
-# Kubernetes Ephemeral Storage & Downward API - CKA Study Guide 🚀
-
-[![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white)](https://kubernetes.io/)
-[![CKA](https://img.shields.io/badge/CKA-Certified-green?style=for-the-badge)](https://www.cncf.io/certification/cka/)
-[![DevOps](https://img.shields.io/badge/DevOps-Learning-blue?style=for-the-badge)](https://github.com/yourusername)
+# Kubernetes Ephemeral Storage & Downward API 
 
 ## 📖 Overview
-This repository contains comprehensive study materials for **Kubernetes Ephemeral Storage** and the **Downward API** - essential topics for the **Certified Kubernetes Administrator (CKA)** certification. 
+This repository contains comprehensive study materials for **Kubernetes Ephemeral Storage** and the **Downward API** 
 
 ## 🎯 Learning Objectives
 - How `emptyDir` volumes facilitate shared scratch space within Pods.
@@ -51,3 +47,51 @@ spec:
   volumes:
   - name: temp-storage
     emptyDir: {}
+```
+
+🔍 Downward API
+The Downward API enables Pods to access metadata about themselves (name, namespace, labels, etc.) without calling the API server.
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: downwardapi-example
+spec:
+  containers:
+  - name: metadata-container
+    image: busybox
+    command: ["/bin/sh", "-c", "env && sleep 3600"]
+    env:
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+```
+
+Volume file Demo
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: downwardapi-volume
+  labels:
+    app: monitor
+spec:
+  containers:
+  - name: metadata-container
+    image: busybox
+    volumeMounts:
+    - name: downwardapi-volume
+      mountPath: /etc/podinfo
+  volumes:
+  - name: downwardapi-volume
+    downwardAPI:
+      items:
+      - path: "labels"
+        fieldRef:
+          fieldPath: metadata.labels
+```
+
+
+
