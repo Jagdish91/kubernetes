@@ -290,3 +290,70 @@ These conditions ensure a seamless and reliable binding process, providing persi
 | Storage Class | fast-ssd | fast-ssd |
 | Volume State | Unbound | Available |
 e|	Volume Mode	|	Filesystem	|	Filesystem|
+
+# Critical Note for KIND/Minikube Users
+
+If you're following along with this course, chances are you’ve installed KIND (Kubernetes IN Docker). KIND comes with a pre-configured default StorageClass out of the box.
+
+If you're using Minikube instead, it's a good idea to check whether your cluster also includes a default StorageClass. You can verify this using the following command:
+
+```bash
+kubectl get storageclasses
+```
+
+**Example output:**
+
+| NAME | PROVISIONER | RECLAIMPOLICY | VOLUMEBINDINGMODE | ALLOWVOLUMEEXPANSION | AGE |
+| --- | --- | --- | --- | --- | --- |
+| standard (default) | rancher.io/local-path | Delete | WaitForFirstConsumer | false | 27d |
+
+## Why Modify the Default Storage Class?
+The default storage class (`standard`) interferes with our demo of Persistent Volumes (PVs) and Persistent Volume Claims (PVCs). For this reason, we will temporarily delete it. However, before deleting it, we’ll take a backup of the YAML configuration. This will allow us to recreate the storage class later when moving to the Storage Classes section.
+
+## Steps to Back Up and Delete the Storage Class
+### Backup the Default Storage Class Configuration
+Use the following command to back up the configuration into a file named `sc.yaml` in your current working directory:
+
+```bash
+kubectl get sc standard -o yaml > sc.yaml
+```
+This ensures we can recreate the standard storage class later as needed.
+
+### Delete the Storage Class
+Now, delete the standard storage class to prevent interference with the PV/PVC demo:
+
+```bash
+kubectl delete sc standard
+```
+**Example output:**
+storageclass.storage.k8s.io "standard" deleted
+
+By following these steps, we ensure that the default configuration doesn’t disrupt our hands-on exercises and we can restore it later when necessary.
+
+# Demo: Persistent Volumes and PVCs with Reclaim Policy
+## Step 1: Create a Persistent Volume (PV)
+Create a file (for example, `pv.yaml`) with the following content:
+```yaml
+apiVersion: v1                       # Kubernetes API version 
+kind: PersistentVolume              # Defines a PersistentVolume resource 
+type: PersistentVolume              # Defines a PersistentVolume resource 
+metadata:
+  name: demo-pv                  # Unique name for the PV 
+spec:
+  capacity:
+    storage: 5Gi                    # Total storage provided (5 GiB)
+  accessModes:
+    - ReadWriteOnce                # Volume can be mounted as read-write by a single node at a time 
+  persistentVolumeReclaimPolicy: Retain  # Retain the volume and data even when the PVC is deleted 
+  hostPath:
+    path: /mnt/data                # Uses a directory on the node (for demo purposes only)
+```
+Note: When the ReclaimPolicy is set to `Retain`, the PersistentVolume (PV) and its data will not be deleted even if the associated PersistentVolumeClaim (PVC) is removed. This means the storage is preserved for manual recovery or reassignment, and must be manually handled by an administrator before it can be reused.
+Apply the PV:
+```bash
+kubectl apply -f pv.yaml
+```
+Verify the PV:
+```bash
+default kubectl get pv
+default kubectl describe pv demo-pv
