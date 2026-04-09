@@ -101,12 +101,17 @@ dthe PV is manually reclaimed or deleted (depending on reclaim policy).
 the reclaim policy options include: **Retain**, **Delete**, or deprecated **Recycle**,
 and determine what happens after deletion of the associated PVC.
 
-## Example Scenario
-Suppose:
+# Example Scenario
+
+Let’s say:
+
 - You create a PVC named `data-pvc` in the namespace `app1-ns`.
-binding occurs with some cluster-scoped PV,
-and only Pods in `app1-ns` can reference this PVC.
-e.g.,
-pods trying to mount this will succeed within their namespace but fail outside with an error like:
-persistentvolumeclaims "data-pvc" not found`
-because from another namespace's perspective, this claim does not exist.
+- It binds to a cluster-scoped PV.
+- Only Pods in `app1-ns` can now reference this PVC.
+- If a Pod in `app2-ns` tries to mount this PVC, it will result in an error like:
+
+```
+persistentvolumeclaims "data-pvc" not found
+```
+
+Because from `app2-ns`'s perspective, that PVC does not exist.
