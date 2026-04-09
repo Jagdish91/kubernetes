@@ -564,7 +564,7 @@ s volumes:
 dKey Explanation:**
 t- Once the Pod is created, Kubernetes finds the PVC (`example-pvc`) and provisions a PV using **the default standard StorageClass**.
 t- The PVC status changes to **Bound**, and a new PV is created and attached to **the Pod**.
-
+```
 ## Step 5: Verify Status
 to check PVs and PVCs status run these commands:
 'txt'
