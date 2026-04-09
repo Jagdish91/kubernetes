@@ -61,5 +61,98 @@ spec:
           env:
             - name: APP
               value: frontend
-defaults;
-the rest of the YAML content continues...
+```
+
+# Verification
+
+## Pick a Pod from the Deployment:
+
+```bash
+kubectl get pods -l app=frontend
+```
+
+## Then exec into one of them:
+
+```bash
+kubectl exec -it <pod-name> -- printenv | grep -E 'APP|ENVIRONMENT'
+```
+
+## Expected Output:
+
+```
+APP=frontend
+ENVIRONMENT=production
+```
+
+# Creating ConfigMaps in Kubernetes
+
+You can also create a **ConfigMap** imperatively using the `kubectl create configmap` command.
+
+## Example:
+```bash
+kubectl create configmap <name-of-configmap> --from-literal=key1=value1 --from-literal=key2=value2
+```
+
+## Real-world example:
+```bash
+kubectl create configmap frontend-cm --from-literal=APP=frontend --from-literal=ENVIRONMENT=production
+```
+
+This method is quick and useful for creating simple ConfigMaps imperatively from the command line, without needing to write and apply a YAML manifest.
+
+---
+
+# When to Use Imperative vs Declarative Approach
+
+## Imperative Commands (`kubectl create configmap`) are best when you:
+- Need to quickly create a ConfigMap for testing or small demos.
+- Are experimenting or working interactively.
+- Don't need to track the resource in version control (like Git).
+
+## Declarative Approach (YAML manifests + `kubectl apply -f`) is preferred when you:
+- Are working in production environments.
+- Want your ConfigMaps (and all Kubernetes resources) to be version-controlled.
+- Need better team collaboration, auditing, and repeatable deployments.
+
+---
+
+# Rule of Thumb:
+- Use imperative for quick, temporary tasks.
+- Use declarative for production-grade, repeatable, and auditable setups.
+
+# Step 2: Mount ConfigMap Volume in Deployment
+
+Understand that ConfigMaps are mounted as directories in Kubernetes. If you try to mount a ConfigMap at a path that is already a file (like `/usr/share/nginx/html/index.html`), the container will fail to start because Kubernetes cannot mount a directory over an existing file.
+
+That’s why we only use `/usr/share/nginx/html` as the `mountPath`, which is a directory, not a file.
+
+## Omitting the `items:` Section
+If you omit the `items:` section, like this:
+
+```yaml
+volumes:
+  - name: html-volume
+    configMap:
+      name: frontend-cm
+```
+
+Then all the keys in the ConfigMap (`APP`, `ENVIRONMENT`, `index.html`) will be mounted as individual files inside `/usr/share/nginx/html`.
+
+### Inside the container, you’d get:
+- `/usr/share/nginx/html/APP`
+- `/usr/share/nginx/html/ENVIRONMENT`
+- `/usr/share/nginx/html/index.html`
+
+## Mounting Only Specific Files with `items:`
+If you only want `index.html` to be mounted (and not `APP`, `ENVIRONMENT`), you should use the `items:` section like this:
+
+```yaml
+volumes:
+  - name: html-volume
+    configMap:
+      name: frontend-cm
+      items:
+        - key: index.html
+          path: index.html
+```
+
