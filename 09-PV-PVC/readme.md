@@ -115,3 +115,15 @@ persistentvolumeclaims "data-pvc" not found
 ```
 
 Because from `app2-ns`'s perspective, that PVC does not exist.
+
+# Kubernetes Persistent Storage Flow (Manual Provisioning)
+
+| Step | Role | Action | Details / Notes |
+|-------|--------------|------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1 | Developer | Requests 5Gi persistent storage for a Pod. | May request via a PVC or through communication with the Kubernetes Admin. |
+| 2 | Kubernetes Admin | Coordinates with Storage Admin for backend volume. | Backend storage could be SAN/NAS exposed via iSCSI, NFS, etc. |
+| 3 | Storage Admin | Allocates a physical volume from a 500Ti storage pool. | May involve LUN creation, NFS export, etc., based on the infrastructure. |
+| 4 | Kubernetes Admin | Creates a PersistentVolume (PV) representing the physical volume in Kubernetes. | Specifies capacity, accessModes, volumeMode, storageClassName, etc. |
+| 5 | Developer | Creates a PersistentVolumeClaim (PVC) requesting 5Gi with specific access and volume modes. | PVC must match criteria defined in the PV. |
+| 6 | Kubernetes | Binds PVC to a suitable PV if all parameters match. | Matching criteria include: storage class, access mode, volume mode, size, etc. |
+| 7 | Pod | References the PVC in its volume definition and mounts it in a container. | PVC acts as an abstraction; Pod doesn’t interact with the PV directly.
