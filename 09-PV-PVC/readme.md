@@ -434,3 +434,53 @@ After creating these resources, use the following commands to check that everyth
 - `kubectl describe pod example-pod`
 
 By following these steps, you’ll see that the PVC is bound to the PV and the Pod successfully mounts the storage. This demo illustrates how the Retain reclaim policy preserves data on the PV and how the dynamic binding between PVCs and PVs works within Kubernetes.
+
+
+# Storage Classes & Dynamic Provisioning
+
+## What is a Storage Class?
+A Storage Class in Kubernetes is a way to define different storage configurations, enabling dynamic provisioning of Persistent Volumes (PVs). It eliminates the need to manually pre-create PVs and provides flexibility for managing storage across diverse workloads.
+
+### Purpose
+- Storage Classes define storage backends and their parameters, such as disk types, reclaim policies, and binding modes.
+- **Dynamic Provisioning:** When a Persistent Volume Claim (PVC) is created, Kubernetes uses the referenced Storage Class to automatically provision a corresponding PV.
+- **Flexibility:** Multiple Storage Classes can coexist in a Kubernetes cluster, allowing administrators to tailor storage types for varying application needs (e.g., high-performance SSDs, low-cost storage, etc.).
+
+## Why Is a Storage Class Required?
+- Simplifies the storage lifecycle by automating PV creation using dynamic provisioning.
+- Offers flexibility to define and manage multiple storage tiers.
+- Optimizes storage resource allocation, especially in environments spanning multiple Availability Zones (AZs).
+
+StorageClass takes over the role of provisioning PVs dynamically, replacing many of the static configurations you used to define in PVs manually. But not everything from PV moves into the StorageClass—some things like access modes, size, volumeMode still come from PVC.
+
+## Example Storage Classes
+Below are two examples of AWS EBS Storage Classes, demonstrating how multiple classes can coexist in the same cluster:
+
+```yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ebs-sc-gp3  # Name of the StorageClass for AWS EBS gp3 volumes.
+provisioner: ebs.csi.aws.com  # Specifies the CSI driver for AWS EBS.
+parameters:
+  type: gp3  # Defines the volume type as gp3 (general purpose SSD with configurable performance).
+reclaimPolicy: Delete  # Deletes the provisioned volume when the PVC is deleted.
+dvolumeBindingMode: WaitForFirstConsumer  # Delays volume creation until the Pod is scheduled.
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ebs-sc-io1  # Name of the StorageClass for AWS EBS io1 volumes.
+provisioner: ebs.csi.aws.com  # Specifies the CSI driver for AWS EBS.
+parameters:
+  type: io1  # Defines the volume type as io1 (high-performance SSD).
+reclaimPolicy: Delete  # Deletes the provisioned volume when the PVC is deleted.
+dvolumeBindingMode: WaitForFirstConsumer  # Ensures the volume is created in the same AZ as the Pod.
+```
+
+## Key Points
+### Reclaim Policy:
+- The **Delete** reclaim policy ensures that dynamically provisioned volumes are automatically cleaned up when their corresponding PVCs are deleted.
+- This prevents orphaned resources and is the most common choice for dynamically provisioned storage.
+
+### WaitForFirstConsumer:
