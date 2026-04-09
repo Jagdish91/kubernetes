@@ -357,3 +357,75 @@ Verify the PV:
 ```bash
 default kubectl get pv
 default kubectl describe pv demo-pv
+
+# Step 2: Create a Persistent Volume Claim (PVC)
+Create a file (for example, `pvc.yaml`) with the following content:
+
+```yaml
+apiVersion: v1                       # Kubernetes API version
+kind: PersistentVolumeClaim         # Defines a PVC resource
+metadata:
+  name: demo-pvc                 # Unique name for the PVC
+spec:
+  accessModes:
+    - ReadWriteOnce                # Request volume to be mounted as read-write by a single node
+  resources:
+    requests:
+      storage: 2Gi                 # Ask for at least 2Gi of storage (must be ≤ PV capacity)
+```
+
+**Key Point:**
+> Since this PVC doesn’t explicitly specify a StorageClass, it will bind to a compatible PV if available. In this demo, the PV created above offers 5Gi, making it a suitable candidate for a 2Gi claim.
+
+## Apply the PVC:
+```bash
+kubectl apply -f pvc.yaml
+```
+## Verify the PVC status:
+```bash
+kubectl get pvc
+kubectl describe pvc demo-pvc
+```
+
+# Step 3: Create a Pod That Uses the PVC
+Create a file (for example, `pod.yaml`) with the following content:
+
+```yaml
+apiVersion: v1                       # Kubernetes API version
+kind: Pod                           # Defines a Pod resource
+metadata:
+  name: example-pod                 # Unique name for the Pod
+spec:
+  containers:
+    - name: nginx-container         # Name of the container
+      image: nginx                  # Container image to use
+      volumeMounts:
+        - mountPath: /usr/share/nginx/html  # Directory inside the container where the volume will be mounted
+          name: persistent-storage  # Logical name for the volume mount 
+  volumes:
+    - name: persistent-storage      # Volume's name referenced above
+      persistentVolumeClaim:
+        claimName: example-pvc      # Bind this volume to the previously created PVC"
+```
+**Important:**
+> When this Pod is created, Kubernetes will bind the PVC to the appropriate PV (if not already bound) and mount the volume. At this point, the PVC status should change from "Pending" to "Bound".
+
+## Apply the Pod:
+```bash
+ykubectl apply -f pod.yaml
+```
+## Verify the Pod and its Volume Attachment:
+```bash
+ykubectl describe pod example-pod
+```
+# Final Verification 
+After creating these resources, use the following commands to check that everything is in order:
+- **Persistent Volumes:**
+kubectl get pv 
+kubectl describe pv example-pv 
+d- **Persistent Volume Claims:**
+kubectl get pvc 
+kubectl describe pvc example-pvc 
+d- **Pod Details:**
+kubectl describe pod example-pod 
+By following these steps, you’ll see that the PVC is bound to the PV and the Pod successfully mounts the storage. This demo illustrates how the Retain reclaim policy preserves data on the PV and how the dynamic binding between PVCs and PVs works within Kubernetes.
