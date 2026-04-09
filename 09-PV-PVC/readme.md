@@ -560,23 +560,33 @@ spec:
 s volumes:
     - name: persistent-storage  # Name of the volume 
       persistentVolumeClaim:
-        claimName: example-pvc  # Links the PVC to the Pod volume 
-dKey Explanation:**
-t- Once the Pod is created, Kubernetes finds the PVC (`example-pvc`) and provisions a PV using **the default standard StorageClass**.
-t- The PVC status changes to **Bound**, and a new PV is created and attached to **the Pod**.
+        claimName: example-pvc  # Links the PVC to the Pod volume
 ```
-## Step 5: Verify Status
-to check PVs and PVCs status run these commands:
-'txt'
-kubectl get pv   
-example output :
-default/example-pvc   pvc-24d1f4ee-d3f8-40eb-8120-21f232087a19   2Gi   RWO   Delete   Bound   default/example-pvc   standard   6m 
-kubectl get pvc 
-example output :
-default/example-pvc   Bound   pvc-24d1f4ee-d3f8-40eb-8120-21f232087a19   2Gi   RWO   standard   6m 
-nKey Takeaways*
-default StorageClass:*
-a. If no StorageClass is specified in your PVC, Kubernetes uses **the default StorageClass** (`standard`, in this case).
-b. The `is-default-class` annotation ensures it acts as default.
-e. `VolumeBindingMode` (`WaitForFirstConsumer`) prevents PV creation until a Pod is scheduled, optimizing resource placement and cost especially in multi-AZ environments.
-f. `Reclaim Policy` (`Delete`) automatically deletes PVs once their associated PVCs are deleted, preventing storage clutter.
+# Key Explanation
+
+Once the Pod is created, Kubernetes finds the PVC (`example-pvc`) and provisions a PV using the default standard StorageClass.
+The PVC status changes to **Bound**, and a new PV is created and attached to the Pod.
+
+# Step 5: Verify the Status
+Run the following commands to check the status of PVs and PVCs:
+
+## Check PVs:
+```bash
+kubectl get pv
+```
+
+## Check PVCs:
+```bash
+kubectl get pvc
+```
+
+## Key Takeaways
+### Default StorageClass:
+- If no StorageClass is specified in the PVC, Kubernetes uses the default StorageClass (standard, in this case).
+- The `is-default-class` annotation ensures it acts as the default.
+
+### VolumeBindingMode (`WaitForFirstConsumer`):
+- Prevents PV creation until a Pod is scheduled, optimizing resource placement and cost in multi-AZ environments.
+
+### Reclaim Policy (`Delete`):
+- Automatically deletes PVs once their associated PVCs are deleted, preventing storage clutter.
