@@ -141,3 +141,14 @@ Because from `app2-ns`'s perspective, that PVC does not exist.
 In many cases, developers are well-versed with Kubernetes and can handle the creation of PersistentVolumeClaims (**PVCs**) themselves. With the introduction of StorageClasses, the process of provisioning PersistentVolumes (**PVs**) has been automated—eliminating the need for Kubernetes administrators to manually coordinate with storage admins and pre-create PVs.
 
 When a PVC is created with a StorageClass, Kubernetes dynamically provisions the corresponding PV. We’ll explore StorageClasses in detail shortly.
+
+# Access Modes in Kubernetes Persistent Volumes
+
+Persistent storage in Kubernetes supports various access modes that dictate how a volume can be mounted. Access modes essentially govern how the volume is mounted across nodes, which is critical in clustered environments like Kubernetes.
+
+| Access Mode | Description | Example Use Case | Type of Storage & Examples |
+|--------------|--------------|------------------|---------------------------|
+| **ReadWriteOnce (RWO)** | The volume can be mounted as read-write by a single node. Multiple Pods can access it only if they are on the same node. | Databases that require exclusive access but may run multiple replicas per node. | Block Storage (e.g., Amazon EBS, GCP Persistent Disk, Azure Managed Disks) |
+| **ReadOnlyMany (ROX)** | The volume can be mounted as read-only by multiple nodes simultaneously. | Sharing static data like configuration files or read-only datasets across multiple nodes. | File Storage (e.g., NFS, Azure File Storage) |
+| **ReadWriteMany (RWX)** | The volume can be mounted as read-write by multiple nodes simultaneously. | Content management systems, shared data applications, or log aggregation. | File Storage (e.g., Amazon EFS, Azure File Storage, On-Prem NFS) |
+| **ReadWriteOncePod (RWOP)** *(Introduced in v1.29)* | The volume can be mounted as read-write by only one Pod across the entire cluster. | Ensuring exclusive access to a volume for a single Pod, such as in tightly controlled workloads. | Block Storage (e.g., Amazon EBS with ReadWriteOncePod enforcement) |
