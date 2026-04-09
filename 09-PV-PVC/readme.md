@@ -192,3 +192,101 @@ File storage is designed for shared storage scenarios, where multiple Pods or ap
 - **File Storage:** Shared workloads like web servers, content management systems, and applications requiring shared configurations or assets.
 
 When evaluating storage options, it's important to align the access modes and storage type with the needs of the workload. For example, "Many" in an access mode (`ReadOnlyMany` or `ReadWriteMany`) usually signals that the underlying storage is file-based and optimized for shared use.
+
+# Reclaim Policies in Kubernetes
+
+Reclaim policies define what happens to a PersistentVolume (PV) when its bound PersistentVolumeClaim (PVC) is deleted. The available policies are:
+
+## 1. Delete (Common for Dynamically Provisioned Storage)
+When the PVC is deleted, the corresponding PV and its underlying storage resource (e.g., cloud disk, block storage) are automatically deleted.
+This is useful in cloud environments where storage resources should be freed when no longer in use.
+
+> **🔹 Example Use Case:**
+> 
+> AWS EBS, GCP Persistent Disk, Azure Disk – Storage dynamically provisioned via CSI drivers gets deleted along with the PV, preventing orphaned resources.
+
+## 2. Retain (Manual Intervention Needed for Reuse)
+When the PVC is deleted, the PV remains in the cluster but moves to a "Released" state.
+The data is preserved, and manual intervention is required to either:
+- Delete and clean up the volume.
+- Rebind it to another PVC by manually removing the claim reference (`claimRef`).
+
+> **🔹 Example Use Case:**
+> 
+> - **Auditing & Compliance:** Ensures data is retained for logs, backups, or forensic analysis.
+> - **Manual Data Recovery:** Useful in scenarios where storage should not be automatically deleted after PVC removal.
+
+## 3. Recycle (Deprecated in Kubernetes v1.20+)
+This policy would automatically wipe the data (using a basic `rm -rf` command) and make the PV available for new claims.
+It was removed in favor of dynamic provisioning and more secure, customizable cleanup methods.
+
+> **🔹 Why Deprecated?**
+> 
+> - Lacked customization for secure erasure methods.
+> - Didn't support advanced cleanup operations (e.g., snapshot-based restoration).
+
+# Choosing the Right Reclaim Policy
+| Reclaim Policy | Behavior | Best Use Case | Common in |
+| --- | --- | --- | --- |
+| **Delete** | Deletes PV and storage resource when PVC is deleted. | Cloud-based dynamically provisioned storage. | AWS EBS, GCP PD, Azure Disk |
+| **Retain** | Keeps PV and storage, requiring manual cleanup. | Backup, auditing, manual data recovery. | On-prem storage, long-term retention workloads |
+| **Recycle (Deprecated)** | Cleans volume and makes PV available again. *(Not recommended)* | Previously used in legacy systems. |
+
+# PVC and PV Binding Conditions
+
+For a PersistentVolumeClaim (PVC) to bind with a PersistentVolume (PV) in Kubernetes, the following conditions must be met:
+
+## Matching Storage Class
+- The `storageClassName` of the PVC and PV must match.
+- If the PVC does not specify a storage class, it can bind to a PV without a storage class.
+
+## Access Mode Compatibility
+- The access mode requested by the PVC (`ReadWriteOnce`, `ReadOnlyMany`, `ReadWriteMany`) must be supported by the PV.
+
+## Sufficient Storage Capacity
+- The PV’s storage must be equal to or greater than the requested capacity in the PVC.
+
+## Volume Binding Mode
+- If set to **Immediate**, the PV binds as soon as a matching PVC is found.
+- If set to **WaitForFirstConsumer**, binding happens only when a pod using the PVC is scheduled.
+
+## PV Must Be Available
+- The PV must be in the **Available** state (i.e., not already bound to another PVC).
+- If the PV is already bound, it cannot be reused unless manually released.
+
+## Matching Volume Mode
+### Volume Modes define how a Persistent Volume (PV) is presented to a Pod:
+- **Block:** Provides raw, unformatted storage for the Pod. The application handles formatting and usage.
+- **Filesystem:** Presents a formatted volume, ready for file-level operations.
+### Matching Modes:
+- A PVC requesting `volumeMode: Block` must match a PV with `volumeMode: Block`.
+- A PVC requesting `volumeMode: Filesystem` must match a PV with `volumeMode: Filesystem`.
+### Use Case for volumeMode: Block:
+This is typically used when an application, such as a database (e.g., PostgreSQL, MySQL), needs direct control over disk formatting, partitioning, or low-level I/O optimizations.
+
+*This ensures compatibility between Pods and their storage.*
+
+## Claim Reference (Manual Binding Cases)
+- If the PV has a `claimRef` field, it can only bind to the specific PVC mentioned in that field.
+
+These conditions ensure a seamless and reliable binding process, providing persistent storage to Kubernetes workloads.
+
+# Summary Table: PVC and PV Binding Conditions
+| Condition | Requirement for Binding |
+| --- | --- |
+| Storage Class Match | `storageClassName` of PVC and PV must match (or both can be empty). |
+| Access Mode Compatibility | PVC’s requested access mode must be supported by PV. |
+| Sufficient Capacity | PV’s storage must be ≥ PVC’s requested capacity. |
+| Volume Binding Mode | Either Immediate or WaitForFirstConsumer. |
+| Volume State | PV must be in Available state to bind. |
+| Matching Volume Mode | PVC and PV must have the same `volumeMode` (`Filesystem` or `Block`). |
+| Claim Reference | If PV has a `claimRef`, it can only bind to that specific PVC. |
+
+# Example Table: PVC vs. PV Matching
+| Condition | PVC Requirement | PV Must Have |
+| --- | --- | --- |
+| Storage Capacity | size: 10Gi | size ≥ 10Gi |
+| Access Mode | ReadWriteMany | ReadWriteMany |
+| Storage Class | fast-ssd | fast-ssd |
+| Volume State | Unbound | Available |
+e|	Volume Mode	|	Filesystem	|	Filesystem|
