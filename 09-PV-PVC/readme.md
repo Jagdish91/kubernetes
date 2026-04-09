@@ -484,3 +484,99 @@ dvolumeBindingMode: WaitForFirstConsumer  # Ensures the volume is created in the
 - This prevents orphaned resources and is the most common choice for dynamically provisioned storage.
 
 ### WaitForFirstConsumer:
+# Kubernetes Multi-AZ Storage Considerations
+
+In a Kubernetes cluster spanning multiple Availability Zones (AZs), **EBS volumes** and **EC2 instances** are AZ-specific resources.
+
+- If a volume is immediately provisioned in one AZ when a PVC is created, and the Pod using the PVC is scheduled in another AZ, the volume cannot be mounted.
+- The `WaitForFirstConsumer` mode ensures that the volume is created only after the Pod is scheduled, ensuring both the Pod and the volume are in the same AZ.
+
+This approach prevents inefficiencies and reduces unnecessary costs associated with resources provisioned in the wrong AZ.
+
+# Demo: Storage Class
+
+## Step 1: Reapply the Storage Class
+Before proceeding with the demo, we need to restore the StorageClass configuration that we backed up (`sc.yaml`). Run the following command to reapply it:
+
+```bash
+kubectl apply -f sc.yaml
+```
+This re-establishes the default standard StorageClass in your KIND cluster.
+
+## Step 2: Create the PersistentVolumeClaim (PVC)
+Below is the YAML to create a PVC. It requests storage but does not explicitly reference any StorageClass:
+
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: example-pvc  # Name of the PersistentVolumeClaim
+spec:
+  accessModes:
+    - ReadWriteOnce  # The volume can be mounted as read-write by a single node.
+  resources:
+    requests:
+      storage: 2Gi  # Requests a minimum of 2Gi storage capacity.
+```
+**Key Explanation:**
+- Even though we didn’t specify a StorageClass, Kubernetes defaults to using the standard StorageClass (if one is configured as the default).
+- The status of the PVC will remain as "Pending" initially since no Persistent Volume (PV) is created at this point.
+- To understand why the PVC is pending, describe the StorageClass with:
+
+```bash
+kubectl describe sc standard
+```
+You’ll see that the standard StorageClass is configured as default:
+
+```
+mata data:
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+provisioner: rancher.io/local-path
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+```
+
+## Step 3: Understand VolumeBindingMode
+The `WaitForFirstConsumer` mode plays a critical role:
+- It delays PV creation until a Pod is scheduled, ensuring cost optimization and proper resource placement.
+- For example, in multi-AZ environments like AWS, if the PVC triggers volume creation in AZ-1 but the Pod is scheduled in AZ-2, the volume won’t be accessible. `WaitForFirstConsumer` avoids this by creating the volume only after a Pod is scheduled, ensuring both the Pod and volume are in the same AZ.
+
+## Step 4: Create a Pod Using the PVC
+Below is the YAML to create a Pod that uses the PVC:
+
+```yaml
+gapiVersion: v1
+kind: Pod
+metadata:
+  name: example-pod  # Name of the Pod
+spec:
+  containers:
+    - name: nginx-container  # Container name 
+      image: nginx  # The container image to use 
+      volumeMounts:
+        - mountPath: /usr/share/nginx/html  # Mounts the volume to this path in the container 
+          name: persistent-storage  # References the volume defined in the Pod 
+s volumes:
+    - name: persistent-storage  # Name of the volume 
+      persistentVolumeClaim:
+        claimName: example-pvc  # Links the PVC to the Pod volume 
+dKey Explanation:**
+t- Once the Pod is created, Kubernetes finds the PVC (`example-pvc`) and provisions a PV using **the default standard StorageClass**.
+t- The PVC status changes to **Bound**, and a new PV is created and attached to **the Pod**.
+
+## Step 5: Verify Status
+to check PVs and PVCs status run these commands:
+'txt'
+kubectl get pv   
+example output :
+default/example-pvc   pvc-24d1f4ee-d3f8-40eb-8120-21f232087a19   2Gi   RWO   Delete   Bound   default/example-pvc   standard   6m 
+kubectl get pvc 
+example output :
+default/example-pvc   Bound   pvc-24d1f4ee-d3f8-40eb-8120-21f232087a19   2Gi   RWO   standard   6m 
+nKey Takeaways*
+default StorageClass:*
+a. If no StorageClass is specified in your PVC, Kubernetes uses **the default StorageClass** (`standard`, in this case).
+b. The `is-default-class` annotation ensures it acts as default.
+e. `VolumeBindingMode` (`WaitForFirstConsumer`) prevents PV creation until a Pod is scheduled, optimizing resource placement and cost especially in multi-AZ environments.
+f. `Reclaim Policy` (`Delete`) automatically deletes PVs once their associated PVCs are deleted, preventing storage clutter.
