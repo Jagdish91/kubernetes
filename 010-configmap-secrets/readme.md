@@ -155,4 +155,63 @@ volumes:
         - key: index.html
           path: index.html
 ```
+# Kubernetes Secrets
+
+## Why Do We Need Secrets in Kubernetes?
+
+In production environments, applications often require access to sensitive data such as:
+
+- **Database credentials:** Used by applications to authenticate securely with backend databases.
+- **API tokens:** Serve as secure keys to authorize and access APIs or third-party services.
+- **SSH private keys:** Enable secure, encrypted access to remote systems over SSH.
+- **TLS certificates:** Provide encryption and identity verification for secure network communication (e.g., HTTPS).
+
+Storing these directly in your container image or Kubernetes manifests as plain text is insecure. Kubernetes Secrets provide a way to manage this data securely.
+
+## What is a Kubernetes Secret?
+
+A Secret is a Kubernetes object used to store and manage sensitive information. Secrets are base64-encoded and can be made more secure by:
+
+- Enabling encryption at rest
+- Limiting RBAC access to Secrets
+- Using external secret managers like HashiCorp Vault, AWS Secrets Manager, or Sealed Secrets
+
+Secrets are accessible to Pods via:
+
+- Environment variables
+- Mounted volumes (as files)
+- Command-line arguments (less common)
+
+> **Note:** By default, Kubernetes stores secrets unencrypted in etcd. It is recommended to enable encryption at rest for better security.
+
+## Important Distinction: Encoding vs. Encryption
+
+It's crucial to understand that Kubernetes Secrets use base64 encoding, not encryption.
+This means the data is obfuscated but not secured. Anyone who gains access to the Secret object can easily decode it.
+
+### Why Use Encoding (e.g., base64)?
+
+Encoding is useful when you want to hide the data from casual observation, such as:
+
+- Preventing someone looking over your shoulder from instantly seeing a password.
+- Making binary data safe to transmit in systems that expect text.
+
+However, encoding is not encryption. It's not secure by itself.
+Anyone who has access to your encoded data can easily decode it.
+
+For example, base64 is reversible using a simple decoding command.
+If you need to protect sensitive data, you should use encryption or a Kubernetes Secret, which at least provides better handling and access controls.
+
+We'll see how to encode and decode in the demo section.
+
+## Encoding vs. Encryption Comparison Table:
+| Feature | Encoding | Encryption |
+|---------|----------|------------|
+| Purpose | Data formatting for safe transport | Data protection and confidentiality |
+| Reversible | Yes (easily reversible) | Yes (only with the correct key) |
+| Security | Not secure | Secure |
+| Use Case | Data transmission/storage compatibility | Protect sensitive data (passwords, tokens) |
+| Example | Base64, URL encoding | AES, RSA, TLS |
+| Tool Needed to Decode | None (any base64 tool) | Requires decryption key |
+> **Note:** If you need to store sensitive data securely, consider enabling encryption at rest for Secrets in Kubernetes and restrict access using RBAC.
 
