@@ -418,14 +418,19 @@ ykubectl apply -f pod.yaml
 ```bash
 ykubectl describe pod example-pod
 ```
-# Final Verification 
+# Final Verification
+
 After creating these resources, use the following commands to check that everything is in order:
-- **Persistent Volumes:**
-kubectl get pv 
-kubectl describe pv example-pv 
-d- **Persistent Volume Claims:**
-kubectl get pvc 
-kubectl describe pvc example-pvc 
-d- **Pod Details:**
-kubectl describe pod example-pod 
+
+## Persistent Volumes:
+- `kubectl get pv`
+- `kubectl describe pv example-pv`
+
+## Persistent Volume Claims:
+- `kubectl get pvc`
+- `kubectl describe pvc example-pvc`
+
+## Pod Details:
+- `kubectl describe pod example-pod`
+
 By following these steps, you’ll see that the PVC is bound to the PV and the Pod successfully mounts the storage. This demo illustrates how the Retain reclaim policy preserves data on the PV and how the dynamic binding between PVCs and PVs works within Kubernetes.
