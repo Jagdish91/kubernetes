@@ -127,3 +127,17 @@ Because from `app2-ns`'s perspective, that PVC does not exist.
 | 5 | Developer | Creates a PersistentVolumeClaim (PVC) requesting 5Gi with specific access and volume modes. | PVC must match criteria defined in the PV. |
 | 6 | Kubernetes | Binds PVC to a suitable PV if all parameters match. | Matching criteria include: storage class, access mode, volume mode, size, etc. |
 | 7 | Pod | References the PVC in its volume definition and mounts it in a container. | PVC acts as an abstraction; Pod doesn’t interact with the PV directly.
+
+# Important Notes
+
+- **PV** is a cluster-scoped resource.
+- **PVC** is a namespaced resource.
+- One **PV** can be claimed by only one **PVC** (1:1 relationship).
+- The Pod must be in the same namespace as the PVC it is using.
+- Communication with physical storage is handled by either:
+  - In-tree drivers (legacy; e.g., `awsElasticBlockStore`, `azureDisk`)
+  - CSI drivers (modern; e.g., `ebs.csi.aws.com`, `azurefile.csi.azure.com`)
+
+In many cases, developers are well-versed with Kubernetes and can handle the creation of PersistentVolumeClaims (**PVCs**) themselves. With the introduction of StorageClasses, the process of provisioning PersistentVolumes (**PVs**) has been automated—eliminating the need for Kubernetes administrators to manually coordinate with storage admins and pre-create PVs.
+
+When a PVC is created with a StorageClass, Kubernetes dynamically provisions the corresponding PV. We’ll explore StorageClasses in detail shortly.
