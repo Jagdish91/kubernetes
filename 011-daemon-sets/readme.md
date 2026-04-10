@@ -39,3 +39,13 @@ kubectl config set-context --current --namespace=logging-ns
 This ensures that all our upcoming commands automatically target the `logging-ns` namespace.
 
 ### Step 3: Apply the DaemonSet Manifest
+
+
+# Deployment vs DaemonSet vs Job vs CronJob
+
+| Aspect | Deployment | DaemonSet | Job | CronJob |
+| --- | --- | --- | --- | --- |
+| **Purpose** | Run long-running stateless applications with scalability and rolling updates. | Ensure one Pod runs on every (or selected) node. | Run a task once to successful completion. | Schedule Jobs to run at specific times (like a cron job). |
+| **Common Use Cases** | Web servers, APIs, frontend apps. | Node-level monitoring, logging agents, networking/storage plugins. | Database migration, batch jobs, backups, one-time tasks. | Scheduled backups, nightly report generation, log rotation. |
+| **Examples** | Deploying a Node.js API server, Nginx deployment, React app backend. | kube-proxy, Fluentd, Calico CNI, AWS EBS CSI Node plugin. | Backup database, clean temporary files, send a one-time notification. | Backup database every night, rotate logs weekly, send monthly invoices. |
+
