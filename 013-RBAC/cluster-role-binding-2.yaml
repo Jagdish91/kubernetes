@@ -1,0 +1,31 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  # "namespace" omitted since ClusterRoles are not namespaced
+  name: elavated-workload-editor
+rules:
+- apiGroups: [""]
+  #
+  # at the HTTP level, the name of the resource for accessing Secret
+  resources: ["pods"]
+  verbs: ["get", "create", "update", "list"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["create", "delete", "update"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: use-clusterrole-in-prod
+  namespace: prod
+subjects:
+# You can specify more than one "subject"
+- kind: User
+  name: jag # "name" is case sensitive
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole #this must be Role or ClusterRole
+  name: elevated-workload-editor # this must match the name of the Role or ClusterRole you wish to bind to
+  apiGroup: rbac.authorization.k8s.io
