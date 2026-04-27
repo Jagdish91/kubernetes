@@ -27,3 +27,27 @@ namespace: dev
 replicas:
 - name: nginx-deploy
   count: 2
+
+patches:
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: nginx-deploy
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/env
+        value:
+          - name: LOG_LEVEL
+            value: debug
+      - op: replace
+        path: /spec/template/spec/containers/0/resources
+        value:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
+      - op: remove
+        path: /metadata/labels/unused
