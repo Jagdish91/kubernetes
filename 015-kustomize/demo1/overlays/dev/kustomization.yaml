@@ -5,3 +5,25 @@ resources:
   - ../../base
 
 nameSuffix: -dev
+
+namePrefix: app1-
+
+labels:
+  - pairs:
+      evn: dev
+    includeSelectors: true
+
+images:
+- name: nginx
+  newName: nginx
+  newTag: "latest"
+
+commonAnnotations:
+  branch: dev
+  support: 800-800
+
+namespace: dev
+
+replicas:
+- name: nginx-deploy
+  count: 2
