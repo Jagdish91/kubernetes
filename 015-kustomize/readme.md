@@ -40,47 +40,6 @@ Let’s say we want to deploy nginx across three environments with the following
 The base folder contains the generic YAML manifests: Deployment, Service, etc.
 Each overlay (dev, staging, prod) contains a small patch to modify specific fields like replicas, image, or metadata.labels.
 
-### Recommended Folder Structure (Using patches: Inline)
-```
-kustomize-demo/
-├── base/
-│   ├── deployment.yaml
-defaults.yaml
-defaults.yaml
-defaults.yaml
-defaults.yaml
-defaults.yaml
-defaults.yaml
-defaults.yaml
-defaults.yaml
-defaults.yaml
-defaults.yaml
-defaults.yaml
-defaults.yaml
-defaults.yaml
-dependency.yml 
-dependency.yml 
-dependency.yml 
-dependency.yml 
-dependency.yml 
-dependency.yml 
-dependency.yml 
-dependency.yml 
-dependency.yml 
-dependency.yml 
-dependency.yml 
-dependency.yml 
-dependency.yml 
-deployment.yaml │   ├── service.yaml │   └── kustomization.yaml └── overlays/ │   ├── dev/ │   │   └── kustomization.yaml │   ├── staging/ │   │   └── kustomization.yaml │   └── prod/ │       └── kustomization.yaml ```
-**base/** : Contains core manifests shared across all environments — typically Deployments, Services,
-e.g., ConfigMaps.
-**overlays/dev/** : Uses inline patches to override replicas,
-lables,
-and image version for development.
-**overlays/staging/** : Similar structure,
-wth stage-specific values patched inline.
-**overlays/prod/** : Inline patch to scale up and ensure prod-grade config.
-> ⚠️ No external patch-*.yaml files are required when using patches:. Everything lives in the `kustomization.yaml` file of each overlay.
 
 # Kustomize Commands Must Run in a Directory with `kustomization.yaml`
 
