@@ -5,3 +5,21 @@ resources:
   - ../../base
 
 nameSuffix: -prod
+
+
+labels:
+- pairs:
+    env: prod
+  includeSelectors: true
+
+images:
+- name: nginx
+  newName: nginx
+  newTag: "1.22"
+
+
+namespace: prod
+
+replicas:
+- name: nginx-deploy
+  count: 3
