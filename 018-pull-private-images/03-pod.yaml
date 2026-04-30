@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-pod
+  namespace: app1-ns
+spec:
+  serviceAccountName: app1-sa
+  containers:
+  - image: docker.io/jagdishdock91/app1:1.0.0
+    name: test-pod
