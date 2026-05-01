@@ -56,3 +56,124 @@ You can check your CNI setup by running:
 ```bash
 kubectl get ds - n kube-system 
 defaults will show calico-node or cilium-agent if you're using a policy-capable CNI.
+```
+# Types of NetworkPolicies
+Kubernetes NetworkPolicies restrict traffic based on three types of selectors: pod labels, namespace labels, and external IPs. Each serves a different use case in controlling network communication.
+
+## 1. Pod-Based (`podSelector`)
+Matches pods within the same namespace using labels.
+
+**Ideal for controlling traffic within a namespace**, such as between tiers like frontend, backend, or database.
+
+**Example:**
+
+```yaml
+podSelector:
+  matchLabels:
+    role: backend
+```
+This selects all pods in the current namespace that are labeled `role=backend`.
+
+## 2. Namespace-Based (`namespaceSelector`)
+Matches namespaces based on their labels (not names).
+
+**Useful for controlling traffic between applications or microservices**, especially when each runs in a separate namespace.
+
+**Example:**
+
+```yaml
+namespaceSelector:
+  matchLabels:
+    app: app1
+```
+This allows traffic to/from any namespace labeled `app=app1`. For instance, if `app1` spans across `app1-dev`, `app1-staging`, and `app1-prod`, and all are labeled `app=app1`, the policy can target all these environments.
+
+## 3. IP-Based (`ipBlock`)
+Matches traffic from/to external IP ranges outside the Kubernetes cluster.
+
+**Typical use case:** An external backup node or logging service needs access to your pods.
+
+**Example:**
+
+```yaml
+ipBlock:
+  cidr: 10.0.0.0/24
+  except:
+    - 10.0.0.5/32
+```
+This allows traffic from the `10.0.0.0/24` range except the specific IP `10.0.0.5`. For example, a backup service on `10.0.0.10` outside your cluster could connect to your database pod.
+# Step 1: Preparing the Cluster (KIND + Calico)
+
+For this demo, we’ll use KIND (Kubernetes in Docker) to create a lightweight cluster. This works on any developer machine and mimics real-world behavior when paired with a CNI plugin that supports NetworkPolicy.
+
+This setup works the same on Minikube or even on managed Kubernetes services — as long as your CNI plugin supports NetworkPolicies.
+
+By default, KIND uses the Kindnet CNI, which does not support NetworkPolicies. So we’ll disable the default CNI and install Calico, a widely used CNI that supports advanced network policy features.
+
+## Delete Existing Cluster (Optional)
+To keep things clean and resource-efficient, delete your previous KIND cluster:
+
+```bash
+kind get clusters
+kind delete cluster --name=<cluster-name>
+```
+
+Create a new cluster:
+
+```bash
+kind create cluster --config kind-cluster.yaml --name=cka-2025
+```
+
+## Check Node Status
+Immediately after cluster creation, your nodes will be in `NotReady` state:
+
+```bash
+kubectl get nodes
+```
+Sample output:
+
+| NAME | STATUS | ROLES | AGE | VERSION |
+|---|---|---|---|---|
+| cka-2025-control-plane | NotReady | control-plane | 1m | v1.33.1 |
+| cka-2025-worker | NotReady | <none> | 1m | v1.33.1 |
+| cka-2025-worker2 | NotReady | <none> | 1m | v1.33.1 |
+
+## Install Calico (CNI with NetworkPolicy Support)
+To bring the nodes to `Ready` status and enable NetworkPolicy support, install Calico:
+
+```bash
+kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.30.2/manifests/calico.yaml
+```
+
+# Step 2: Creating Namespace and Deploying Frontend, Backend, and DB
+
+# Step 3: Verify the Current State — Everyone Can Talk to Everyone
+Before applying any restrictions, observe the default open communication state where all pods can talk to each other.
+
+## Set namespace context
+to `app1-ns`:
+```bash
+default kubectl config set-context --current --namespace=app1-ns```
+
+## Verify All Pods Are Running
+default kubectl get pods
+```
+Sample output will list all pods.
+
+## Validate Communication from Frontend Pod
+to test connectivity:
+- Exec into the frontend pod:
+```bash
+default kubectl exec -it frontend-deploy-6bc8df5bb8-wfjpt -- bash```
+- Install telnet inside the pod (if not already available):
+bash
+apt update && apt install -y telnet 
+default # Test connectivity to backend and database services:
+telnet backend-svc 5678
+telnet db-svc 3306 
+default # Test connectivity to specific StatefulSet pod using its DNS name:
+telnet db-sts-0.db-svc.app1-ns.svc.cluster.local 3306"
+done"
+```
+
+
