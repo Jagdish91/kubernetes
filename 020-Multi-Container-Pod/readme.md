@@ -97,7 +97,7 @@ Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQL
     
 
 ### 4\. Resource Management
-yaml
+---yaml
 
 Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   resources:  limits:    cpu: "250m"     # 0.25 CPU cores    memory: "128Mi" # 128 Mebibytes (NOT "128m"!)   `
 
@@ -107,26 +107,3 @@ Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQL
     
 *   Essential for multi-tenant clusters
 
-┌─────────────────────────────────────────────────────────┐
-│                    Pod: security-monitor                 │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  Phase 1: ┌─────────────────────────────────────────┐   │
-│           │       Init Container: pre-flight        │   │
-│           │  • Checks https://kubernetes.io        │   │
-│           │  • Structured logging with retries     │   │
-│           │  • Must succeed before main containers │   │
-│           └─────────────────────────────────────────┘   │
-│                                                         │
-│  Phase 2: ┌─────────────────┐  ┌─────────────────────┐ │
-│           │  Container 1:   │  │   Container 2:      │ │
-│           │    web-server   │  │  traffic-analyzer   │ │
-│           │  • nginx:latest │  │ • curlimages/curl   │ │
-│           │  • port: 80     │  │ • Monitors port 80  │ │
-│           │  • readinessProbe│ │ • Logs health status │ │
-│           └─────────────────┘  └─────────────────────┘ │
-│                                                         │
-│  Shared: Network namespace (localhost)                  │
-│          restartPolicy: OnFailure                       │
-│          Namespace: prod-security                        │
-└─────────────────────────────────────────────────────────┘
