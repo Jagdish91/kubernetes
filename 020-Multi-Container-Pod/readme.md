@@ -83,7 +83,7 @@ The traffic-analyzer demonstrates classic sidecar usage:
     
 *   Separation of concerns (app vs monitoring)
 
-### 3\. Production Readiness
+### Production Readiness
 
 yaml
 
@@ -97,7 +97,8 @@ Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQL
     
 
 ### 4\. Resource Management
----yaml
+
+yaml
 
 Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   resources:  limits:    cpu: "250m"     # 0.25 CPU cores    memory: "128Mi" # 128 Mebibytes (NOT "128m"!)   `
 
