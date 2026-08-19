@@ -108,47 +108,25 @@ Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQL
 *   Essential for multi-tenant clusters
 
 ┌─────────────────────────────────────────────────────────┐
-
-│ Pod: security-monitor │
-
+│                    Pod: security-monitor                 │
 ├─────────────────────────────────────────────────────────┤
-
-│ │
-
-│ Phase 1: ┌─────────────────────────────────────────┐ │
-
-│ │ Init Container: pre-flight │ │
-
-│ │ • Checks https://kubernetes.io │ │
-
-│ │ • Structured logging with retries │ │
-
-│ │ • Must succeed before main containers │ │
-
-│ └─────────────────────────────────────────┘ │
-
-│ │
-
-│ Phase 2: ┌─────────────────┐ ┌─────────────────────┐ │
-
-│ │ Container 1: │ │ Container 2: │ │
-
-│ │ web-server │ │ traffic-analyzer │ │
-
-│ │ • nginx:latest │ │ • curlimages/curl │ │
-
-│ │ • port: 80 │ │ • Monitors port 80 │ │
-
-│ │ • readinessProbe│ │ • Logs health status │ │
-
-│ └─────────────────┘ └─────────────────────┘ │
-
-│ │
-
-│ Shared: Network namespace (localhost) │
-
-│ restartPolicy: OnFailure │
-
-│ Namespace: prod-security │
-
+│                                                         │
+│  Phase 1: ┌─────────────────────────────────────────┐   │
+│           │       Init Container: pre-flight        │   │
+│           │  • Checks https://kubernetes.io        │   │
+│           │  • Structured logging with retries     │   │
+│           │  • Must succeed before main containers │   │
+│           └─────────────────────────────────────────┘   │
+│                                                         │
+│  Phase 2: ┌─────────────────┐  ┌─────────────────────┐ │
+│           │  Container 1:   │  │   Container 2:      │ │
+│           │    web-server   │  │  traffic-analyzer   │ │
+│           │  • nginx:latest │  │ • curlimages/curl   │ │
+│           │  • port: 80     │  │ • Monitors port 80  │ │
+│           │  • readinessProbe│ │ • Logs health status │ │
+│           └─────────────────┘  └─────────────────────┘ │
+│                                                         │
+│  Shared: Network namespace (localhost)                  │
+│          restartPolicy: OnFailure                       │
+│          Namespace: prod-security                        │
 └─────────────────────────────────────────────────────────┘
