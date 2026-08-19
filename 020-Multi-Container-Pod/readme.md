@@ -9,7 +9,7 @@ This repository contains three progressively complex multi-container pod configu
 1. **Basic Sidecar Pattern** - Simple health monitoring
 2. **Intermediate Init Containers** - Sequential dependency checks  
 3. **Advanced Production Pattern** - Full monitoring with init containers + sidecars
-
+ 
 ## Files Structure
 
 | File | Description | Difficulty |
