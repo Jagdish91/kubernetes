@@ -1,0 +1,14 @@
+# Check node labels
+kubectl get nodes --show-labels
+
+# Check namespace
+kubectl get ns | grep team-blue
+
+# Check pod scheduling
+kubectl get pods -n team-blue -o wide
+
+# Verify anti-affinity
+kubectl describe pod backend-app -n team-blue | grep -A 10 Events
+
+# Check labels and tolerations
+kubectl describe pod frontend-app -n team-blue
