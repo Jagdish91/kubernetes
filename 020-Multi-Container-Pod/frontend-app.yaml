@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: frontend-app
+  namespace: team-blue
+spec:
+  tolerations:
+  - key: "workload"
+    operator: "Equal"
+    value: "frontend"
+    effect: "NoSchedule"
+  nodeSelector:
+    tier: "frontend"
+  containers:
+  - image: nginx
+    name: frontend-app
+  restartPolicy: Never
