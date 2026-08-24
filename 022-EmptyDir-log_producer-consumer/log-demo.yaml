@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: log-demo
+  namespace: prod
+  labels:
+    run: log-demo
+spec:
+  containers:
+  - name: log-producer
+    image: busybox
+    command:
+    - sh
+    - -c
+    - |
+      mkdir -p /shared/logs
+      while true; do
+        echo "$(date '+%Y-%m-%d %H:%M:%S') - Application log entry" >> /shared/logs/app.log
+        sleep 10
+      done
+    volumeMounts:
+    - name: log-volume
+      mountPath: /shared/logs
+    startupProbe:
+      exec:
+        command:
+        - sh
+        - -c
+        - test -s /shared/logs/app.log
+      periodSeconds: 2
+      failureThreshold: 15
+
+  - name: log-aggregator
+    image: busybox
+    command:
+    - sh
+    - -c
+    - |
+      until [ -s /shared/logs/app.log ]; do
+        echo "waiting for app.log to have content..."
+        sleep 2
+      done
+
+      while true; do
+        count=$(wc -l < /shared/logs/app.log 2>/dev/null || echo 0)
+        echo "$$(date '+%Y-%m-%d %H:%M:%S') - Total log lines: $$count" >> /shared/logs/summary.txt
+        sleep 30
+      done
+    volumeMounts:
+    - name: log-volume
+      mountPath: /shared/logs
+
+  volumes:
+  - name: log-volume
+    emptyDir:
+      sizeLimit: 50Mi
