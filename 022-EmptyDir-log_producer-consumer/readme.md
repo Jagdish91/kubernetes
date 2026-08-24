@@ -64,9 +64,12 @@ After working through this project, you will understand:
 
 ### **Startup Probe**
 
-yaml
-
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   startupProbe:  exec:    command: [sh, -c, "test -s /shared/logs/app.log"]  periodSeconds: 2  failureThreshold: 15   `
+```startupProbe:
+  exec:
+    command: [sh, -c, "test -s /shared/logs/app.log"]
+  periodSeconds: 2
+  failureThreshold: 15
+```
 
 *   Checks if file exists and is non-empty (-s flag)
     
