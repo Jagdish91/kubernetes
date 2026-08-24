@@ -84,7 +84,9 @@ After working through this project, you will understand:
 
 Unlike init containers, regular app containers start in parallel. To ensure aggregator waits for producer:
 
-sh
-
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   until [ -s /shared/logs/app.log ]; do  echo "waiting for app.log to have content..."  sleep 2done   `
+```until [ -s /shared/logs/app.log ]; do
+  echo "waiting for app.log to have content..."
+  sleep 2
+done
+```
 
