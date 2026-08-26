@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    app: log-collector
+  name: log-collector
+spec:
+  updateStrategy:
+    type: OnDelete
+  selector:
+    matchLabels:
+      app: log-collector-pod
+  template:
+    metadata:
+      labels:
+        app: log-collector-pod
+    spec:
+      volumes:
+      - name: my-vol
+        hostPath:
+          path: /var/log/app
+          type: DirectoryOrCreate
+      tolerations:
+      - key: "node-role.kubernetes.io/infra"
+        operator: "Exists"
+        effect: "NoSchedule"
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
+      containers:
+      - image: busybox:1.35
+        name: cont-log
+        command:
+        - "sh"
+        - "-c"
+        - |
+          while true; do
+            hostname >> /logs/collector.log;
+            date >> /logs/collector.log;
+            sleep 15
+          done
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "64Mi"
+          limits:
+            cpu: "100m"
+            memory: "128Mi"
+        volumeMounts:
+        - name: my-vol
+          mountPath: /logs
